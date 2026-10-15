@@ -1,0 +1,14 @@
+services:
+  shopease-monolith:
+    build: .
+    container_name: shopease-monolith
+    ports:
+      - "5001:5000"
+    volumes:
+      - monolith-data:/data
+    environment:
+      - DB_PATH=/data/shopease.db
+    restart: unless-stopped
+
+volumes:
+  monolith-data:

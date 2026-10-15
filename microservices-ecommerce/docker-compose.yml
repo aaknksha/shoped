@@ -1,0 +1,72 @@
+
+services:
+  gateway:
+    build: ./gateway
+    container_name: shopease-gateway
+    ports:
+      - "5002:5000"
+    environment:
+      PRODUCT_SERVICE_URL: http://product-service:5001
+      CART_SERVICE_URL: http://cart-service:5003
+      ORDER_SERVICE_URL: http://order-service:5004
+    depends_on:
+      - product-service
+      - cart-service
+      - order-service
+    networks:
+      - shopease-network
+    restart: unless-stopped
+
+  product-service:
+    build: ./product-service
+    container_name: shopease-product-service
+    expose:
+      - "5001"
+    environment:
+      DB_PATH: /data/products.db
+    volumes:
+      - product-data:/data
+    networks:
+      - shopease-network
+    restart: unless-stopped
+
+  cart-service:
+    build: ./cart-service
+    container_name: shopease-cart-service
+    expose:
+      - "5003"
+    environment:
+      DB_PATH: /data/cart.db
+      PRODUCT_SERVICE_URL: http://product-service:5001
+    volumes:
+      - cart-data:/data
+    depends_on:
+      - product-service
+    networks:
+      - shopease-network
+    restart: unless-stopped
+
+  order-service:
+    build: ./order-service
+    container_name: shopease-order-service
+    expose:
+      - "5004"
+    environment:
+      DB_PATH: /data/orders.db
+      CART_SERVICE_URL: http://cart-service:5003
+    volumes:
+      - order-data:/data
+    depends_on:
+      - cart-service
+    networks:
+      - shopease-network
+    restart: unless-stopped
+
+networks:
+  shopease-network:
+    driver: bridge
+
+volumes:
+  product-data:
+  cart-data:
+  order-data:
